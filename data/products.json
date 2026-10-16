@@ -1,0 +1,4 @@
+[
+  { "sku": "DEMO-001", "name": "Samsung Galaxy A55 5G, 256 ГБ", "myPrice": 214990, "minPrice": 199000, "maxPrice": 239990, "step": 100, "competitors": [{ "seller": "SmartPoint", "price": 212990, "inStock": true }, { "seller": "Gadget City", "price": 209990, "inStock": false }] },
+  { "sku": "DEMO-002", "name": "Dyson V15 Detect Absolute", "myPrice": 369990, "minPrice": 345000, "maxPrice": 399990, "step": 100, "competitors": [] }
+]

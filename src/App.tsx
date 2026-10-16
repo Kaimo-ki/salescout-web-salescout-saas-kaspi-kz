@@ -16,6 +16,7 @@ const money = (value: number) => `${new Intl.NumberFormat('ru-RU').format(value)
 export default function App() {
   const [results, setResults] = useState<PriceResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState(false);
   const [search, setSearch] = useState('');
   const [updatedAt, setUpdatedAt] = useState(new Date());
 
@@ -25,9 +26,11 @@ export default function App() {
       const response = await fetch('/reprice', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(products) });
       if (!response.ok) throw new Error('API error');
       setResults(await response.json() as PriceResult[]);
+      setApiError(false);
       setUpdatedAt(new Date());
     } catch {
-      setResults(products.map((product) => ({ sku: product.sku, oldPrice: product.myPrice, newPrice: product.myPrice, reason: 'NO_COMPETITORS' })));
+      setResults([]);
+      setApiError(true);
     } finally { setLoading(false); }
   };
 
@@ -63,6 +66,7 @@ export default function App() {
       </section>
 
       <section className="products-section"><div className="section-heading"><div><div className="section-kicker">МОНИТОРИНГ <span>·</span> 01</div><h2>Ваши товары</h2><p>Сравнение цен с конкурентами в реальном времени</p></div><div className="heading-actions"><button className="filter-button"><span className="filter-dot" />Все товары <ChevronDown size={14} /></button><button className="more-button">•••</button></div></div>
+        {apiError && <div className="api-error">Не удалось связаться с сервером. Запустите API командой <code>npm run dev</code>, затем попробуйте ещё раз.</div>}
         <div className="table-card"><div className="table-toolbar"><div className="table-tabs"><button className="selected">Все товары <span>128</span></button><button>Изменена цена <span>{moved}</span></button><button>Нужна настройка</button></div><label className="search-box"><Search size={15} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Найти товар или SKU" /><kbd>⌘ K</kbd></label></div>
           <div className="table-wrap"><table><thead><tr><th className="product-col">ТОВАР</th><th>КОНКУРЕНТЫ</th><th>ВАША ЦЕНА</th><th>НОВАЯ ЦЕНА</th><th>СТАТУС</th><th /></tr></thead><tbody>{rows.map(({ product, result }, index) => <tr key={product.sku}><td><div className="product-cell"><div className={`product-thumb thumb-${index % 5}`}><span>{['◉', '◈', '▣', '◖', '✳'][index % 5]}</span></div><div><strong>{product.name}</strong><small>SKU: {product.sku}</small></div></div></td><td><div className="competitor-cell"><strong>{product.competitors.filter((item) => item.inStock).length || '—'}</strong><span>в наличии</span></div></td><td><span className="old-price">{money(product.myPrice)}</span></td><td><div className="new-price-cell"><strong>{result ? money(result.newPrice) : '—'}</strong>{result && result.newPrice !== result.oldPrice && <span><ArrowDownRight size={12} />{money(result.oldPrice - result.newPrice)}</span>}</div></td><td><span className={`reason-pill reason-${result?.reason.toLowerCase()}`}>{result?.reason === 'UNDERCUT' && <i />}{reasonText[result?.reason ?? 'NO_COMPETITORS']}</span></td><td><button className="row-menu">···</button></td></tr>)}</tbody></table>{rows.length === 0 && <div className="empty-state">Ничего не найдено</div>}{loading && <div className="loading-line" />}</div>
           <div className="table-footer"><span>Показано <b>{rows.length}</b> из <b>128</b> товаров</span><div className="pagination"><button disabled>←</button><button className="page-active">1</button><button>2</button><button>3</button><span>…</span><button>13</button><button>→</button></div><button className="view-all">Все товары <ArrowRight size={14} /></button></div>
